@@ -3,19 +3,31 @@ import { AuthContext } from '../../contexts/AuthProvider/AuthProvider';
 import OrdersRow from './OrdersRow';
 
 const Orders = () => {
-    const {user} = useContext(AuthContext);
+    const {user, logOut} = useContext(AuthContext);
     const [orders, setOrders]= useState([]);
     console.log(user);
     useEffect(()=>{
-        fetch(`http://localhost:5000/orders?email=${user?.email}`)
-        .then(res=>res.json())
-        .then(data=>{setOrders(data)})
+        fetch(`https://genius-car-server-smoky.vercel.app/orders?email=${user?.email}`, {
+            headers:{
+                authorization:`Bearers ${localStorage.getItem('GeniusCar -Token')}`
+            }
+        })
+        .then(res=>{
+            if(res.status===401 || res.status===403){
+                logOut()
+            }
+            return res.json()
+        })
+        .then(data=>{
+            console.log(data);
+            setOrders(data)
+        })
     }, [user?.email]);
 
     const handleDelete= (id)=>{
         const proceed = window.confirm('Are you sure your want to delete?');
         if(proceed){
-            fetch(`http://localhost:5000/orders/${id}`, {
+            fetch(`https://genius-car-server-smoky.vercel.app/orders/${id}`, {
                 method:'delete'
             })
             .then(res=>res.json())
@@ -29,7 +41,7 @@ const Orders = () => {
 
     return (
         <div>
-            {orders.length}
+            {/* {orders.length} */}
             <div className="overflow-x-auto w-full">
             <table className="table w-full">
                 
